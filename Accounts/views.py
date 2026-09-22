@@ -7,10 +7,10 @@ from django.views.decorators.cache import never_cache
 @never_cache 
 def login_view(request):
     if request.user.is_authenticated:
-        return redirect("accounts:home")
+        return redirect("Accounts:home")
 
     if request.method=="POST":
-        username=request.POST.get("Username")
+        username=request.POST.get("username")
         password=request.POST.get("password")
 
         user=authenticate(
@@ -26,7 +26,7 @@ def login_view(request):
             request,"Accounts/login.html",
             {"error":"invalid username or password"}
         )
-    return render("request","Accounts/login.html")
+    return render(request,"Accounts/login.html")
 
 @never_cache
 @login_required
