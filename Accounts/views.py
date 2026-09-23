@@ -3,7 +3,7 @@ from django.contrib.auth import authenticate,login,logout
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import never_cache 
 from .forms import Loginform 
-
+from django.contrib.auth.forms import UserCreationForm
 @never_cache 
 def login_view(request):
     
@@ -41,3 +41,16 @@ def logout_view(request):
     logout(request)
     return redirect("Accounts:login")
 
+@never_cache
+def signup_view(request):
+    if request.user.is_authenticated:
+        return redirect("Accounts:home")
+
+    if request.method=="POST":
+        form=UserCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect("Accounts:login")
+    else:
+        form=UserCreationForm()
+    return render(request,"Accounts/signup.html",{"form":form})

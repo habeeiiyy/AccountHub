@@ -15,7 +15,7 @@ SECRET_KEY = 'django-insecure-shhfh2b(8q9odyrhkj)qu!s)gespqp4f9)wx(bcx)o*g*+b!j#
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 env=environ.Env()
-
+LOGIN_URL="/"
 environ.Env.read_env(BASE_DIR/".env")
 ALLOWED_HOSTS = []
 # Application definition
@@ -96,14 +96,9 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
-
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.1/howto/static-files/
-
 STATIC_URL = 'static/'
-
-
 # Email
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
 
