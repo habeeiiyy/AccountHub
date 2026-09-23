@@ -3,6 +3,7 @@ from django.contrib.auth import authenticate,login,logout
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import never_cache 
 from .forms import Loginform 
+from django.views.decorators.http import require_POST
 from django.contrib.auth.forms import UserCreationForm
 @never_cache 
 def login_view(request):
@@ -37,6 +38,7 @@ def home(request):
     return render(request,"Accounts/home.html")
 
 @never_cache
+@require_POST
 def logout_view(request):
     logout(request)
     return redirect("Accounts:login")

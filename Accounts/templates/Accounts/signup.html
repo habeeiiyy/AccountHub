@@ -29,16 +29,31 @@
           {{ form.username.label_tag }}
                                 {{ form.username }}
                    </div>
+                   {% if form.username.errors %}
+                   <div class="alert alert-danger py-1 mb-3 text-center small">
+                       {{ form.username.errors }}
+                   </div>
+                   {% endif %}
 
                             <div class="mb-3 d-flex justify-content-center">
                                 {{ form.password1.label_tag }}
                                 {{ form.password1 }}
   </div>
+  {% if form.password1.errors %}
+  <div class="alert alert-danger py-1 mb-3 text-center small">
+      {{ form.password1.errors }}
+  </div>
+  {% endif %}
 
                             <div class="mb-3 d-flex justify-content-center">
              {{ form.password2.label_tag }}
           {{ form.password2 }}
                             </div>
+                            {% if form.password2.errors %}
+                            <div class="alert alert-danger py-1 mb-3 text-center small">
+                                {{ form.password2.errors }}
+                            </div>
+                            {% endif %}
 
  <div class="d-flex justify-content-center">
                                 <button type="submit" class="btn btn-primary w-50 mt-2">Sign Up</button>
