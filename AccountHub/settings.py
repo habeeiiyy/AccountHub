@@ -15,7 +15,10 @@ SECRET_KEY = 'django-insecure-shhfh2b(8q9odyrhkj)qu!s)gespqp4f9)wx(bcx)o*g*+b!j#
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 env=environ.Env()
-LOGIN_URL="/"
+LOGIN_URL = "Accounts:login"
+SESSION_COOKIE_AGE = 30 * 60
+SESSION_SAVE_EVERY_REQUEST = True
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 environ.Env.read_env(BASE_DIR/".env")
 ALLOWED_HOSTS = []
 # Application definition
