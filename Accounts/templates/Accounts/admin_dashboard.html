@@ -1,0 +1,77 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Admin Dashboard</title>
+</head>
+<body>
+    <main>
+        <h1>Admin Dashboard</h1>
+        <p>Signed in as {{ request.user.username }}</p>
+
+        <p><a href="{% url 'Accounts:add_user' %}">Add user</a></p>
+
+        <form method="get">
+            <label for="search">Search by username or email</label>
+            <input id="search" type="search" name="q" value="{{ query }}">
+            <button type="submit">Search</button>
+            {% if query %}
+                <a href="{% url 'Accounts:admin_dashboard' %}">Clear search</a>
+            {% endif %}
+        </form>
+
+        <table>
+            <thead>
+                <tr>
+                    <th scope="col">ID</th>
+                    <th scope="col">Username</th>
+                    <th scope="col">Email</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Staff</th>
+                    <th scope="col">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                    <tr>
+                        <td>{{ user.id }}</td>
+                        <td>{{ user.username }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>{% if user.is_active %}Active{% else %}Blocked{% endif %}</td>
+                        <td>{% if user.is_staff %}Yes{% else %}No{% endif %}</td>
+                        <td>
+                            <a href="{% url 'Accounts:edit_user' user.id %}">Edit</a>
+                            <form method="post" action="{% url 'Accounts:delete_user' user.id %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="next" value="{% url 'Accounts:admin_dashboard' %}?q={{ query|urlencode }}&page={{ users.number }}">
+                                <button type="submit" onclick="return confirm('Delete this user?')">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="6">No users found.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {% if users.has_previous or users.has_next %}
+            <nav aria-label="User list pages">
+                {% if users.has_previous %}
+                    <a href="?q={{ query|urlencode }}&page={{ users.previous_page_number }}">Previous</a>
+                {% endif %}
+                {% if users.has_next %}
+                    <a href="?q={{ query|urlencode }}&page={{ users.next_page_number }}">Next</a>
+                {% endif %}
+            </nav>
+        {% endif %}
+
+        <form method="post" action="{% url 'Accounts:logout' %}">
+            {% csrf_token %}
+            <button type="submit">Log out</button>
+        </form>
+    </main>
+</body>
+</html>

@@ -10,7 +10,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-shhfh2b(8q9odyrhkj)qu!s)gespqp4f9)wx(bcx)o*g*+b!j#'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -21,6 +20,8 @@ SESSION_SAVE_EVERY_REQUEST = True
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 environ.Env.read_env(BASE_DIR/".env")
 ALLOWED_HOSTS = []
+
+SECRET_KEY = env('SECRET_KEY')
 # Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
