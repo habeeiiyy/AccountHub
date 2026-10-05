@@ -1,39 +1,39 @@
-from django.shortcuts import get_object_or_404, redirect, render
+from functools import wraps
+
+from django.core.paginator import Paginator
 from django.contrib.auth import authenticate, get_user_model, login, logout
-from django.contrib.auth.decorators import login_required, user_passes_test
-from django.urls import reverse
-from django.utils.http import url_has_allowed_host_and_scheme
-from django.views.decorators.cache import never_cache
-from django.views.decorators.http import require_POST
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from django.db.models import Q
-from django.core.paginator import Paginator
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
+from django.views.decorators.cache import never_cache
+from django.views.decorators.http import require_POST
+
 from .forms import AdminUserForm, LoginForm
 
 User = get_user_model()
 
-
-def is_staff_user(user):
-    return user.is_authenticated and user.is_staff
-
-
-staff_required = user_passes_test(is_staff_user, login_url="Accounts:admin_login")
+def admin_required(view_func):
+    def wrapper(request, *args, **kwargs):
+        if request.user.is_authenticated:
+            if request.user.is_staff:
+                if request.session.get("admin_access") == True:
+                    return view_func(request, *args, **kwargs)
+        return redirect("Accounts:admin_login")
+    return wrapper
 
 
 def get_admin_return_url(request):
-    next_url = request.POST.get("next", "")
-    if next_url and url_has_allowed_host_and_scheme(
-        next_url,
-        allowed_hosts={request.get_host()},
-        require_https=request.is_secure(),
-    ):
+    next_url = request.POST.get("next")
+    
+    if next_url:
         return next_url
-    return reverse("Accounts:admin_dashboard")
-
+    else:
+        return reverse("Accounts:admin_dashboard")
 
 @never_cache
 def login_view(request):
-
     if request.user.is_authenticated:
         return redirect("Accounts:home")
 
@@ -46,6 +46,7 @@ def login_view(request):
 
             user = authenticate(request, username=username, password=password)
             if user is not None:
+                request.session.pop("admin_access", None)
                 login(request, user)
                 return redirect("Accounts:home")
             form.add_error(None, "invalid username or password")
@@ -84,7 +85,11 @@ def signup_view(request):
 
 @never_cache
 def admin_login_view(request):
-    if request.user.is_authenticated and request.user.is_staff:
+    if (
+        request.user.is_authenticated
+        and request.user.is_staff
+        and request.session.get("admin_access", False)
+    ):
         return redirect("Accounts:admin_dashboard")
     if request.method == "POST":
         form = LoginForm(request.POST)
@@ -96,6 +101,7 @@ def admin_login_view(request):
             user = authenticate(request, username=username, password=password)
             if user is not None and user.is_staff:
                 login(request, user)
+                request.session["admin_access"] = True
                 return redirect("Accounts:admin_dashboard")
             form.add_error(None, "Invalid username or password")
     else:
@@ -104,7 +110,7 @@ def admin_login_view(request):
 
 
 @never_cache
-@staff_required
+@admin_required
 def admin_dashboard(request):
     query = request.GET.get("q", "").strip()
     users = User.objects.all().order_by("id")
@@ -119,14 +125,17 @@ def admin_dashboard(request):
     return render(
         request,
         "Accounts/admin_dashboard.html",
-        {"users": page_obj, "query": query, "page_obj": page_obj},
+        {"users": page_obj, "query": query},
     )
 
 
 @never_cache
-@staff_required
+@admin_required
 def user_form(request, user_id=None):
-    user = get_object_or_404(User, id=user_id) if user_id is not None else None
+    user = None
+    if user_id is not None:
+        user = get_object_or_404(User, pk=user_id)
+
     form_data = request.POST if request.method == "POST" else None
     form = AdminUserForm(form_data, instance=user)
 
@@ -144,7 +153,7 @@ def user_form(request, user_id=None):
 
 @never_cache
 @require_POST
-@staff_required
+@admin_required
 def toggle_user_status(request, user_id):
     user = get_object_or_404(User, id=user_id)
     if user != request.user:
@@ -156,7 +165,7 @@ def toggle_user_status(request, user_id):
 
 @never_cache
 @require_POST
-@staff_required
+@admin_required
 def delete_user(request, user_id):
     user = get_object_or_404(User, id=user_id)
     if user != request.user:
